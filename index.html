@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Blockchain Software Verification</title>
+
+  <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <link rel="stylesheet" href="main.css" />
+  
+</head>
+
+<body>
+
+<!-- ✅ HEADER -->
+<div class="header">
+  <img src="pada_logo.png">
+  <div class="header-text">
+    <h2>Blockchain & Distributed Ledger Technologies</h2>
+    <p>CsCyb105</p>
+  </div>
+</div>
+
+<!-- ✅ APP TITLE -->
+<div class="title">
+  Trusted Software Release Verification System
+</div>
+
+<!-- WALLET (μένει μόνο του) -->
+<div class="container wallet-container">
+  <h3>Wallet Connection</h3>
+
+  <button onclick="connectWallet()">Connect MetaMask</button>
+
+  <p>OR</p>
+
+  <input id="walletInput" placeholder="Enter Wallet Address">
+  <button onclick="setManualWallet()">Use Address</button>
+
+  <p id="account"></p>
+</div>
+
+<!-- ✅ WRAPPER για responsive layout -->
+<div class="container-wrapper">
+
+  <!-- REGISTER -->
+  <div class="container">
+    <h3>Register Release</h3>
+    <input id="version" placeholder="Version (e.g. v1.0)">
+    <input id="hash" placeholder="Hash (0x...)">
+    <button onclick="register()">Register</button>
+  </div>
+
+  <!-- VERIFY -->
+  <div class="container">
+    <h3>Verify Release</h3>
+    <input id="v_version" placeholder="Version">
+    <input id="v_hash" placeholder="Hash">
+    <button onclick="verify()">Verify</button>
+    <p id="verifyResult" class="result"></p>
+  </div>
+
+  <!-- GET -->
+  <div class="container">
+    <h3>Get Release Info</h3>
+    <input id="g_version" placeholder="Version">
+    <button onclick="getRelease()">Get Info</button>
+    <p id="releaseInfo" class="result"></p>
+  </div>
+
+</div>
+
+<div class="footer">
+  © 2026 All rights reserved - Adrianos Theocharis (Cscyb25051)
+</div>
+
+<script defer src="main.js"></script>
+
+</body>
+</html>
