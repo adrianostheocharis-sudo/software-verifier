@@ -65,7 +65,7 @@ async function getRelease() {
     const version = document.getElementById("g_version").value;
 
     const data = await contract.getRelease(version);
-
+    console.log(data[2]);
     // ✅ CHECK αν υπάρχει
     if (data[2] == 0) {
       document.getElementById("releaseInfo").innerText =
