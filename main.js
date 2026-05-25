@@ -61,13 +61,28 @@ async function verify() {
 
 // ✅ Get Release
 async function getRelease() {
-  const version = document.getElementById("g_version").value;
+  try {
+    const version = document.getElementById("g_version").value;
 
-  const data = await contract.getRelease(version);
+    const data = await contract.getRelease(version);
 
-  document.getElementById("releaseInfo").innerText =
-    "Version: " + data[0] + "\n" +
-    "Hash: " + data[1] + "\n" +
-    "Timestamp: " + new Date(data[2] * 1000) + "\n" +
-    "Publisher: " + data[3];
+    // ✅ CHECK αν υπάρχει
+    if (data[2] == 0) {
+      document.getElementById("releaseInfo").innerText =
+        "❌ Release not found!";
+      return;
+    }
+
+    document.getElementById("releaseInfo").innerText =
+      "Version: " + data[0] + "\n" +
+      "Hash: " + data[1] + "\n" +
+      "Timestamp: " + new Date(data[2] * 1000) + "\n" +
+      "Publisher: " + data[3];
+
+  } catch (err) {
+    console.error(err);
+
+    document.getElementById("releaseInfo").innerText =
+      "❌ Error retrieving release!";
+  }
 }
