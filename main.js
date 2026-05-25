@@ -61,19 +61,14 @@ async function verify() {
 
 // ✅ Get Release
 async function getRelease() {
+  const version = document.getElementById("g_version").value;
+  const el = document.getElementById("releaseInfo");
+
   try {
-    const version = document.getElementById("g_version").value;
-
     const data = await contract.getRelease(version);
-    console.log(data[2]);
-    // ✅ CHECK αν υπάρχει
-    if (data[2] == 0) {
-      document.getElementById("releaseInfo").innerText =
-        "❌ Release not found!";
-      return;
-    }
 
-    document.getElementById("releaseInfo").innerText =
+    el.style.color = "#00ff99";
+    el.innerText =
       "Version: " + data[0] + "\n" +
       "Hash: " + data[1] + "\n" +
       "Timestamp: " + new Date(data[2] * 1000) + "\n" +
@@ -82,7 +77,13 @@ async function getRelease() {
   } catch (err) {
     console.error(err);
 
-    document.getElementById("releaseInfo").innerText =
-      "❌ Error retrieving release!";
+    // ✅ Αν το error είναι "Release not found"
+    if (err.reason && err.reason.includes("not found")) {
+      el.style.color = "red";
+      el.innerText = "❌ Release not found!";
+    } else {
+      el.style.color = "red";
+      el.innerText = "❌ Error fetching release!";
+    }
   }
 }
