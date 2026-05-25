@@ -52,12 +52,33 @@ async function register() {
 async function verify() {
   const version = document.getElementById("v_version").value;
   const hash = document.getElementById("v_hash").value;
+  const el = document.getElementById("verifyResult");
 
-  const result = await contract.verifyRelease(version, hash);
+  try {
+    const result = await contract.verifyRelease(version, hash);
 
-  document.getElementById("verifyResult").innerText =
-    result ? "✅ VALID RELEASE" : "❌ INVALID RELEASE";
+    if (result) {
+      el.style.color = "#00ff99"; // ✅ πράσινο
+      el.innerText = "✅ VALID RELEASE";
+    } else {
+      el.style.color = "orange"; // ⚠️ πορτοκαλί (υπάρχει αλλά δεν ταιριάζει)
+      el.innerText = "❌ INVALID RELEASE";
+    }
+
+  } catch (err) {
+    console.error(err);
+
+    // ✅ αν δεν υπάρχει release
+    if (err.reason && err.reason.includes("not found")) {
+      el.style.color = "red";
+      el.innerText = "❌ Release not found!";
+    } else {
+      el.style.color = "red";
+      el.innerText = "❌ Verification error!";
+    }
+  }
 }
+
 
 // ✅ Get Release
 async function getRelease() {
