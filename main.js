@@ -13,6 +13,15 @@ const abi = [
   "function owner() view returns (address)"
 ];
 
+
+document.getElementById("version").addEventListener("input", validateRegister);
+document.getElementById("hash").addEventListener("input", validateRegister);
+
+document.getElementById("v_version").addEventListener("input", validateVerify);
+document.getElementById("v_hash").addEventListener("input", validateVerify);
+
+document.getElementById("g_version").addEventListener("input", validateGet);
+
 // ✅ MetaMask Connect
 async function connectWallet() {
   provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -152,3 +161,57 @@ function enableRegister() {
   const container = document.querySelectorAll(".container")[1];
   container.style.display = "block";
 }
+
+
+function validateRegister() {
+  const version = document.getElementById("version").value;
+  const hash = document.getElementById("hash").value;
+  const btn = document.getElementById("registerBtn");
+
+  if (isNotEmpty(version) && isValidHash(hash)) {
+    btn.disabled = false;
+  } else {
+    btn.disabled = true;
+  }
+}
+
+
+function validateVerify() {
+  const version = document.getElementById("v_version").value;
+  const hash = document.getElementById("v_hash").value;
+  const btn = document.getElementById("verifyBtn");
+
+  if (isNotEmpty(version) && isValidHash(hash)) {
+    btn.disabled = false;
+  } else {
+    btn.disabled = true;
+  }
+}
+
+function validateGet() {
+  const version = document.getElementById("g_version").value;
+  const btn = document.getElementById("getBtn");
+
+  if (isNotEmpty(version)) {
+    btn.disabled = false;
+  } else {
+    btn.disabled = true;
+  }
+}
+
+
+function isValidHash(hash) {
+  return /^0x[a-fA-F0-9]{64}$/.test(hash);
+}
+
+function isNotEmpty(value) {
+  return value && value.trim() !== "";
+}
+
+
+window.onload = () => {
+  document.getElementById("registerBtn").disabled = true;
+  document.getElementById("verifyBtn").disabled = true;
+  document.getElementById("getBtn").disabled = true;
+};
+
