@@ -55,14 +55,14 @@
     <h3>Verify Release</h3>
     <input id="v_version" placeholder="Version (e.g. v1.0)">
     <input id="v_hash" placeholder="Hash (0x + 64 hex chars)">
-    <button onclick="verify()">Verify</button>
+    <button id="registerBtn" id="verifyBtn" onclick="verify()">Verify</button>
     <p id="verifyResult" class="result"></p>
   </div>
 
   <!-- GET -->
   <div class="container">
     <h3>Get Release Info</h3>
-    <input id="g_version" placeholder="Version (e.g. v1.0)">
+    <input id="getBtn" id="g_version" placeholder="Version (e.g. v1.0)">
     <button onclick="getRelease()">Get Info</button>
     <p id="releaseInfo" class="result"></p>
   </div>
