@@ -14,6 +14,8 @@ const abi = [
 ];
 
 
+document.getElementById("walletInput").addEventListener("input", validateWalle
+
 document.getElementById("version").addEventListener("input", validateRegister);
 document.getElementById("hash").addEventListener("input", validateRegister);
 
@@ -163,6 +165,17 @@ function enableRegister() {
 }
 
 
+function validateWallet() {
+  const address = document.getElementById("walletInput").value;
+  const btn = document.getElementById("walletBtn");
+
+  if (isValidAddress(address)) {
+    btn.disabled = false;
+  } else {
+    btn.disabled = true;
+  }
+}
+
 function validateRegister() {
   const version = document.getElementById("version").value;
   const hash = document.getElementById("hash").value;
@@ -200,6 +213,20 @@ function validateGet() {
 }
 
 
+function validateWallet() {
+  const address = document.getElementById("walletInput").value;
+  const btn = document.getElementById("walletBtn");
+  const input = document.getElementById("walletInput");
+
+  if (isValidAddress(address)) {
+    btn.disabled = false;
+    input.style.border = "2px solid #00ff99"; // πράσινο
+  } else {
+    btn.disabled = true;
+    input.style.border = "2px solid red"; // κόκκινο
+  }
+}
+
 function isValidHash(hash) {
   return /^0x[a-fA-F0-9]{64}$/.test(hash);
 }
@@ -208,8 +235,12 @@ function isNotEmpty(value) {
   return value && value.trim() !== "";
 }
 
+function isValidAddress(address) {
+  return /^0x[a-fA-F0-9]{40}$/.test(address);
+}
 
 window.onload = () => {
+  document.getElementById("walletBtn").disabled = true;
   document.getElementById("registerBtn").disabled = true;
   document.getElementById("verifyBtn").disabled = true;
   document.getElementById("getBtn").disabled = true;
