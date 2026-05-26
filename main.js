@@ -74,7 +74,7 @@ async function verify() {
       el.innerText = "✅ VALID RELEASE";
     } else {
       el.style.color = "orange"; // ⚠️ πορτοκαλί (υπάρχει αλλά δεν ταιριάζει)
-      el.innerText = "❌ INVALID RELEASEs";
+      el.innerText = "❌ INVALID RELEASE";
     }
 
   } catch (err) {
