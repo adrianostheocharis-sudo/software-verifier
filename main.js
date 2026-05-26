@@ -59,6 +59,11 @@ function setManualWallet() {
 
 // ✅ Register
 async function register() {
+  if (currentRole !== "publisher") {
+    alert("❌ Only publisher can register release!");
+    return;
+  }
+
   if (!contract) {
     alert("Connect wallet first!");
     return;
