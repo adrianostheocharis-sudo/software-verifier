@@ -1,4 +1,5 @@
 document.getElementById("walletInput").addEventListener("input", validateWallet);
+document.getElementById("roleSelect") .addEventListener("change", setRole);
 
 document.getElementById("version").addEventListener("input", validateRegister);
 document.getElementById("hash").addEventListener("input", validateRegister);
@@ -7,6 +8,20 @@ document.getElementById("v_version").addEventListener("input", validateVerify);
 document.getElementById("v_hash").addEventListener("input", validateVerify);
 
 document.getElementById("g_version").addEventListener("input", validateGet);
+
+document.getElementById("account").innerText =  "Role: " + currentRole + " | " + currentAccount;
+
+let currentRole = null;
+
+function setRole() {
+  currentRole = document.getElementById("roleSelect").value;
+
+  if (currentRole === "publisher") {
+    enableRegister();
+  } else {
+    disableRegister();
+  }
+}
 
 function disableRegister() {
   const container = document.querySelectorAll(".container")[1]; // register box
