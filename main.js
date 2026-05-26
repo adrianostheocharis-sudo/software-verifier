@@ -145,16 +145,10 @@ async function getRelease() {
 
 function disableRegister() {
   const container = document.querySelectorAll(".container")[1]; // register box
-  container.style.opacity = "0.4";
-
-  const button = container.querySelector("button");
-  button.disabled = true;
+  container.style.display = "none";
 }
 
 function enableRegister() {
   const container = document.querySelectorAll(".container")[1];
-  container.style.opacity = "1";
-
-  const button = container.querySelector("button");
-  button.disabled = false;
+  container.style.display = "block";
 }
