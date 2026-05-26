@@ -30,7 +30,14 @@ function setManualWallet() {
 
   document.getElementById("account").innerText =
     "Using address (read-only): " + currentAccount;
+
+  // ✅ Δημιουργία provider (χωρίς signer)
+  provider = new ethers.providers.Web3Provider(window.ethereum);
+
+  // ✅ Δημιουργία contract READ-ONLY
+  contract = new ethers.Contract(contractAddress, abi, provider);
 }
+
 
 // ✅ Register
 async function register() {
@@ -50,6 +57,11 @@ async function register() {
 
 // ✅ Verify
 async function verify() {
+  
+  if (!contract) {
+    alert("Connect wallet first!");
+    return;
+  }
   const version = document.getElementById("v_version").value;
   const hash = document.getElementById("v_hash").value;
   const el = document.getElementById("verifyResult");
@@ -82,6 +94,11 @@ async function verify() {
 
 // ✅ Get Release
 async function getRelease() {
+  
+  if (!contract) {
+    alert("Connect wallet first!");
+    return;
+  }
   const version = document.getElementById("g_version").value;
   const el = document.getElementById("releaseInfo");
 
