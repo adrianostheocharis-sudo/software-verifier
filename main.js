@@ -9,20 +9,33 @@ const contractAddress = "0xcb9A0962b383C2b609933D07ee4Bb39414FB88D7";
 const abi = [
   "function registerRelease(string memory _version, bytes32 _hash)",
   "function getRelease(string memory _version) view returns (string memory, bytes32, uint256, address)",
-  "function verifyRelease(string memory _version, bytes32 _hash) view returns (bool)"
+  "function verifyRelease(string memory _version, bytes32 _hash) view returns (bool)",
+  "function owner() view returns (address)"
 ];
 
 // ✅ MetaMask Connect
 async function connectWallet() {
   provider = new ethers.providers.Web3Provider(window.ethereum);
   await provider.send("eth_requestAccounts", []);
-  signer = await provider.getSigner();
+  signer = provider.getSigner();
 
   currentAccount = await signer.getAddress();
+
   document.getElementById("account").innerText = "Connected: " + currentAccount;
 
   contract = new ethers.Contract(contractAddress, abi, signer);
+
+  // ✅ ΠΑΡΕ OWNER
+  const owner = await contract.owner();
+
+  // ✅ Έλεγχος
+  if (currentAccount.toLowerCase() !== owner.toLowerCase()) {
+    disableRegister();
+  } else {
+    enableRegister();
+  }
 }
+
 
 // ✅ Manual wallet input (read-only mode)
 function setManualWallet() {
@@ -36,6 +49,10 @@ function setManualWallet() {
 
   // ✅ Δημιουργία contract READ-ONLY
   contract = new ethers.Contract(contractAddress, abi, provider);
+
+  // ✅ always disable register
+  disableRegister();
+
 }
 
 
@@ -124,4 +141,20 @@ async function getRelease() {
       el.innerText = "❌ Error fetching release!";
     }
   }
+}
+
+function disableRegister() {
+  const container = document.querySelectorAll(".container")[1]; // register box
+  container.style.opacity = "0.4";
+
+  const button = container.querySelector("button");
+  button.disabled = true;
+}
+
+function enableRegister() {
+  const container = document.querySelectorAll(".container")[1];
+  container.style.opacity = "1";
+
+  const button = container.querySelector("button");
+  button.disabled = false;
 }
