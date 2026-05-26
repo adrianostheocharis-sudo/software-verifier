@@ -1,4 +1,4 @@
-document.getElementById("walletInput").addEventListener("input", validateWalle
+document.getElementById("walletInput").addEventListener("input", validateWallet);
 
 document.getElementById("version").addEventListener("input", validateRegister);
 document.getElementById("hash").addEventListener("input", validateRegister);
