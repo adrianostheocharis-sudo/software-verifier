@@ -1,10 +1,9 @@
 let provider;
 let signer;
 let contract;
-let readContract;
-let writeContract;
 let currentAccount;
 let owner = null;
+let ownerAddress;
 let isOwner;
 let isPublisher;
 
@@ -65,7 +64,7 @@ async function connectWallet() {
 function updateAccessUI() {
 
   const addSection = document.getElementById("adminButtons");
-
+  document.getElementById("connectWalletBtn").disabled = true;
   document.getElementById("verifyForm").style.display = "block";
   document.getElementById("getForm").style.display = "block";
 
@@ -82,11 +81,11 @@ function updateAccessUI() {
   const roleLabel = document.getElementById("roleLabel");
 
   if (isOwner) {
-    roleLabel.innerText = "🟢 OWNER";
+    roleLabel.innerText = "🟢 OWNER (Admin/Read/Write Mode)";
   } else if (isPublisher) {
-    roleLabel.innerText = "🔵 PUBLISHER";
+    roleLabel.innerText = "🔵 PUBLISHER (Read/Write Mode)";
   } else {
-    roleLabel.innerText = "⚪ USER";
+    roleLabel.innerText = "⚪ CLIENT/AUDITOR (Read-only Mode)";
   }
 
 }
@@ -94,93 +93,138 @@ function updateAccessUI() {
 
 async function addPublisherUI() {
   const addr = document.getElementById("walletInput").value;
-
-  if (!isValidAddress(addr)) {
-    alert("❌ Invalid address!");
-    return;
-  }
-
-  if (!signer) {
+  const el = document.getElementById("publisherResult");
+  showLoader();
+  if (!contract) {
     alert("❌ Connect MetaMask first!");
     return;
   }
 
-  try {
-    showLoader();
+  
+  // ✅ CONFIRMATION
+  const confirmAction = confirm(
+    "Are you sure you want to ADD this publisher?\n\n" + addr
+  );
 
+  if (!confirmAction) return;
+
+
+  // ✅ Validate address
+  if (!isValidAddress(addr)) {
+    el.style.color = "red";
+    el.innerText = "❌ Invalid address!";
+    return;
+  }
+  
+  try {
+
+    // ✅ Owner check (UI safety)
+    const owner = await contract.owner();
+
+    if (currentAccount.toLowerCase() !== owner.toLowerCase()) {
+      el.style.color = "red";
+      el.innerText = "❌ Only owner can add publishers!";
+      hideLoader();
+      return;
+    }
+
+    // ✅ Check if already publisher (UX)
     const exists = await contract.isPublisher(addr);
 
     if (exists) {
+      el.style.color = "orange";
+      el.innerText = "⚠️ Already a publisher!";
       hideLoader();
-      alert("⚠️ Address is already a publisher!");
       return;
     }
-
+    // ✅ Send transaction
     const tx = await contract.addPublisher(addr);
-
-    //updateLoader("🟠 Transaction submitted...");
-
     await tx.wait();
-
     hideLoader();
-    alert("✅ Publisher added!");
-    validateWallet();
+    el.style.color = "#00ff99";
+    el.innerText = "✅ Publisher added successfully!";
+
   } catch (err) {
     hideLoader();
     console.error(err);
 
+    el.style.color = "red";
+
     if (err.reason) {
-      alert("❌ " + err.reason);
+
+      el.innerText = "❌ " + err.reason;
     } else {
-      alert("❌ Transaction failed!");
+      el.innerText = "❌ Transaction failed!";
     }
   }
+  checkPublisherStatus(addr);
 }
+
 
 async function removePublisherUI() {
   const addr = document.getElementById("walletInput").value;
-
-  if (!isValidAddress(addr)) {
-    alert("❌ Invalid address!");
-    return;
-  }
-
-  if (!signer) {
+  const el = document.getElementById("publisherResult");
+  
+  if (!contract) {
     alert("❌ Connect MetaMask first!");
     return;
   }
 
+  // ✅ CONFIRMATION
+  const confirmAction = confirm(
+    "⚠️ WARNING!\n\nAre you sure you want to REMOVE this publisher?\n\n" + addr
+  );
+
+  if (!confirmAction) return;
+
+  // ✅ Validate address
+  if (!isValidAddress(addr)) {
+    el.style.color = "red";
+    el.innerText = "❌ Invalid address!";
+    return;
+  }
+
   try {
+    // ✅ Owner check
     showLoader();
+    const owner = await contract.owner();
 
-    const exists = await contract.isPublisher(addr);
-
-    if (!exists) {
-      hideLoader();
-      alert("⚠️ Address is not a publisher!");
+    if (currentAccount.toLowerCase() !== owner.toLowerCase()) {
+      el.style.color = "red";
+      el.innerText = "❌ Only owner can remove publishers!";
       return;
     }
 
+    // ✅ Check if exists
+    const exists = await contract.isPublisher(addr);
+
+    if (!exists) {
+      el.style.color = "orange";
+      el.innerText = "⚠️ Address is not a publisher!";
+      return;
+    }
+
+    // ✅ Send transaction
     const tx = await contract.removePublisher(addr);
-
-    //updateLoader("🟠 Transaction submitted...");
-
     await tx.wait();
+    hideLoader();
+    el.style.color = "#00ff99";
+    el.innerText = "✅ Publisher removed successfully!";
 
-    hideLoader();
-    alert("✅ Publisher removed!");
-    validateWallet();
   } catch (err) {
-    hideLoader();
     console.error(err);
+    hideLoader();
+    el.style.color = "red";
 
     if (err.reason) {
-      alert("❌ " + err.reason);
+      el.innerText = "❌ " + err.reason;
     } else {
-      alert("❌ Transaction failed!");
+      el.innerText = "❌ Transaction failed!";
     }
   }
+  checkPublisherStatus(addr);
 }
+
 
 // ✅ Register
 async function register() {
