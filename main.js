@@ -1,79 +1,295 @@
 let provider;
 let signer;
 let contract;
+let readContract;
+let writeContract;
 let currentAccount;
+let owner = null;
+let isOwner;
+let isPublisher;
 
-// ✅ βάλε το address σου
-const contractAddress = "0xcb9A0962b383C2b609933D07ee4Bb39414FB88D7";
+//const contractAddress = "0xcb9A0962b383C2b609933D07ee4Bb39414FB88D7";
+const contractAddress = "0xA1A969Eb2695c19B4d47e198917C2e7a136F582D";
+
 
 const abi = [
   "function registerRelease(string memory _version, bytes32 _hash)",
   "function getRelease(string memory _version) view returns (string memory, bytes32, uint256, address)",
   "function verifyRelease(string memory _version, bytes32 _hash) view returns (bool)",
-  "function owner() view returns (address)"
+  "function owner() view returns (address)",
+  "function isPublisher(address _addr) view returns (bool)",
+  "function addPublisher(address _addr)",
+  "function removePublisher(address _addr)"
 ];
 
 
 // ✅ MetaMask Connect
 async function connectWallet() {
-  provider = new ethers.providers.Web3Provider(window.ethereum);
-  await provider.send("eth_requestAccounts", []);
-  signer = provider.getSigner();
+  try {
+    // ✅ MetaMask connection
+    showLoader();
+    provider = new ethers.providers.Web3Provider(window.ethereum);
+    await provider.send("eth_requestAccounts", []);
+    signer = provider.getSigner();
 
-  currentAccount = await signer.getAddress();
+    currentAccount = await signer.getAddress();
 
-  document.getElementById("account").innerText = "Connected: " + currentAccount;
+    // ✅ write contract (με signer)
+    writeContract = new ethers.Contract(contractAddress, abi, signer);
 
-  contract = new ethers.Contract(contractAddress, abi, signer);
+    // ✅ read contract (optional)
+    readContract = writeContract;
 
-  // ✅ ΠΑΡΕ OWNER
-  const owner = await contract.owner();
+    // ✅ εμφάνιση account
+    document.getElementById("account").innerText =
+      "Connected: " + currentAccount;
 
-  // ✅ Έλεγχος
-  if (currentAccount.toLowerCase() !== owner.toLowerCase()) {
-    disableRegister();
-  } else {
-    enableRegister();
+    // ✅ πάρε owner
+    ownerAddress = await writeContract.owner();
+
+    // ✅ check roles
+    isOwner = currentAccount.toLowerCase() === ownerAddress.toLowerCase();
+    isPublisher = await writeContract.isPublisher(currentAccount);
+    hideLoader();
+    updateAccessUI();
+
+  } catch (err) {
+    console.error(err);
+    alert("❌ Failed to connect wallet!");
   }
 }
 
 
-// ✅ Manual wallet input (read-only mode)
-function setManualWallet() {
-  currentAccount = document.getElementById("walletInput").value;
+async function connectWithAddress() {
+  try {
+    showLoader();
 
-  document.getElementById("account").innerText =
-    "Using address (read-only): " + currentAccount;
+    const inputAddress = document.getElementById("walletInput").value;
+
+    if (!isValidAddress(inputAddress)) {
+      alert("❌ Invalid address");
+      return;
+    }
+
+    // ✅ connect MetaMask
+    provider = new ethers.providers.Web3Provider(window.ethereum);
+    await provider.send("eth_requestAccounts", []);
+
+    signer = provider.getSigner();
+    const metamaskAddress = await signer.getAddress();
+
+    // ✅ compare addresses
+    if (metamaskAddress.toLowerCase() !== inputAddress.toLowerCase()) {
+      alert("❌ The connected wallet does not match the entered address!");
+      hideLoader();
+      return;
+    }
+
+    // ✅ αν ταιριάζουν → προχωράς
+    currentAccount = metamaskAddress;
+
+    writeContract = new ethers.Contract(contractAddress, abi, signer);
+    readContract = writeContract;
+
+    document.getElementById("account").innerText =
+      "Connected: " + currentAccount;
+
+    ownerAddress = await writeContract.owner();
+
+    isOwner = currentAccount.toLowerCase() === ownerAddress.toLowerCase();
+    isPublisher = await writeContract.isPublisher(currentAccount);
+
+    hideLoader();
+    updateAccessUI();
+
+  } catch (err) {
+    console.error(err);
+    alert("❌ Connection failed!");
+    hideLoader();
+  }
+}
+
+
+function updateAccessUI() {
+
+  // 🔹 Register section
+/*   const registerBtn = document.getElementById("registerBtn");
+
+  if (isPublisher) {
+    registerBtn.disabled = false;
+  } else {
+    registerBtn.disabled = true;
+  }
+ */
+  // 🔹 Admin (add/remove publishers)
+  const addSection = document.getElementById("adminButtons");
+  const removeSection = document.getElementById("useAddressBtn");
+
+  if (isOwner) {
+    addSection.style.display = "block";
+    removeSection.style.display = "none";
+    document.getElementById("useAddressConnectBtn").style.display = "none";
+  } else if(isPublisher){
+    addSection.style.display = "none";
+    removeSection.style.display = "none";
+    document.getElementById("useAddressConnectBtn").style.display = "block";
+  }else{
+    addSection.style.display = "none";
+    removeSection.style.display = "block";
+    document.getElementById("useAddressConnectBtn").style.display = "none";
+  }
+
+  const roleLabel = document.getElementById("roleLabel");
+
+  if (isOwner) {
+    roleLabel.innerText = "🟢 OWNER";
+  } else if (isPublisher) {
+    roleLabel.innerText = "🔵 PUBLISHER";
+  } else {
+    roleLabel.innerText = "⚪ USER";
+  }
+
+}
+
+// ✅ Manual wallet input (read-only mode)
+async function setManualWallet() {
+  signer = null;
+  writeContract = null;
+  currentAccount = document.getElementById("walletInput").value;
 
   // ✅ Δημιουργία provider (χωρίς signer)
   provider = new ethers.providers.Web3Provider(window.ethereum);
 
   // ✅ Δημιουργία contract READ-ONLY
-  contract = new ethers.Contract(contractAddress, abi, provider);
+  readContract = new ethers.Contract(contractAddress, abi, provider);
+  let exists = await readContract.isPublisher(currentAccount);
+  let usingStatus;
 
-  // ✅ always disable register
-  disableRegister();
+  if (exists) {
+    usingStatus = "";
+    enableRegister();
+  }else{
+    disableRegister();
+    usingStatus = "(read-only)";
+  }
+  document.getElementById("account").innerText = "Using address "+usingStatus+": " + currentAccount;
 
 }
 
 
+async function addPublisherUI() {
+  const addr = document.getElementById("walletInput").value;
+
+  if (!isValidAddress(addr)) {
+    alert("❌ Invalid address!");
+    return;
+  }
+
+  if (!signer) {
+    alert("❌ Connect MetaMask first!");
+    return;
+  }
+
+  try {
+    showLoader();
+
+    const exists = await writeContract.isPublisher(addr);
+
+    if (exists) {
+      hideLoader();
+      alert("⚠️ Address is already a publisher!");
+      return;
+    }
+
+    const tx = await writeContract.addPublisher(addr);
+
+    //updateLoader("🟠 Transaction submitted...");
+
+    await tx.wait();
+
+    hideLoader();
+    alert("✅ Publisher added!");
+    validateWallet();
+  } catch (err) {
+    hideLoader();
+    console.error(err);
+
+    if (err.reason) {
+      alert("❌ " + err.reason);
+    } else {
+      alert("❌ Transaction failed!");
+    }
+  }
+}
+
+async function removePublisherUI() {
+  const addr = document.getElementById("walletInput").value;
+
+  if (!isValidAddress(addr)) {
+    alert("❌ Invalid address!");
+    return;
+  }
+
+  if (!signer) {
+    alert("❌ Connect MetaMask first!");
+    return;
+  }
+
+  try {
+    showLoader();
+
+    const exists = await writeContract.isPublisher(addr);
+
+    if (!exists) {
+      hideLoader();
+      alert("⚠️ Address is not a publisher!");
+      return;
+    }
+
+    const tx = await writeContract.removePublisher(addr);
+
+    //updateLoader("🟠 Transaction submitted...");
+
+    await tx.wait();
+
+    hideLoader();
+    alert("✅ Publisher removed!");
+    validateWallet();
+  } catch (err) {
+    hideLoader();
+    console.error(err);
+
+    if (err.reason) {
+      alert("❌ " + err.reason);
+    } else {
+      alert("❌ Transaction failed!");
+    }
+  }
+}
+
 // ✅ Register
 async function register() {
-  if (currentRole !== "publisher") {
+
+  if (isPublisher) {
     alert("❌ Only publisher can register release!");
     return;
   }
 
-  if (!contract) {
+  if (!writeContract) {
     alert("Connect wallet first!");
     return;
   }
 
+  showLoader();
+
   const version = document.getElementById("version").value;
   const hash = document.getElementById("hash").value;
 
-  const tx = await contract.registerRelease(version, hash);
+  const tx = await writeContract.registerRelease(version, hash);
+
   await tx.wait();
+
+  hideLoader();
 
   alert("✅ Release Registered!");
 }
@@ -81,7 +297,7 @@ async function register() {
 // ✅ Verify
 async function verify() {
   
-  if (!contract) {
+  if (!readContract) {
     alert("Connect wallet first!");
     return;
   }
@@ -90,7 +306,7 @@ async function verify() {
   const el = document.getElementById("verifyResult");
 
   try {
-    const result = await contract.verifyRelease(version, hash);
+    const result = await readContract.verifyRelease(version, hash);
 
     if (result) {
       el.style.color = "#00ff99"; // ✅ πράσινο
@@ -118,7 +334,7 @@ async function verify() {
 // ✅ Get Release
 async function getRelease() {
   
-  if (!contract) {
+  if (!readContract) {
     alert("Connect wallet first!");
     return;
   }
@@ -126,7 +342,7 @@ async function getRelease() {
   const el = document.getElementById("releaseInfo");
 
   try {
-    const data = await contract.getRelease(version);
+    const data = await readContract.getRelease(version);
 
     el.style.color = "#00ff99";
     el.innerText =
@@ -148,4 +364,6 @@ async function getRelease() {
     }
   }
 }
+
+
 
