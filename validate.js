@@ -40,17 +40,13 @@ function validateWallet() {
   const input = document.getElementById("walletInput");
   let address = input.value;
 
-  const btn = document.getElementById("walletBtn");
-
   if (isValidAddress(address)) {
 
     address = ethers.utils.getAddress(address);
-    btn.disabled = false;
     input.style.border = "2px solid #00ff99";
     
     checkPublisherStatus(address);
   } else {
-    btn.disabled = true;
     input.style.border = "2px solid red";
 
     resetPublisherButtons();
@@ -176,11 +172,13 @@ function hideLoader() {
 
 
 window.onload = () => {
-  document.getElementById("walletBtn").disabled = true;
   document.getElementById("publisherBtn").disabled = true;
   document.getElementById("removePublisherBtn").disabled = true;
   document.getElementById("registerBtn").disabled = true;
   document.getElementById("verifyBtn").disabled = true;
   document.getElementById("getBtn").disabled = true;
   document.getElementById("adminButtons").style.display = "none";
+  document.getElementById("registerForm").style.display = "none";
+  document.getElementById("verifyForm").style.display = "none";
+  document.getElementById("getForm").style.display = "none";
 };
