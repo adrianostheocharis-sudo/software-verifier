@@ -1,97 +1,135 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Blockchain Software Verification</title>
+    body {
+      font-family: Arial, sans-serif;
+      background: #121212;
+      color: #ffffff;
+      text-align: center;
+      margin: 0;
+    }
 
-  <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-  <link rel="stylesheet" href="main.css" />
-  
-</head>
+	.container-wrapper {
+	  display: grid;
+	  grid-template-columns: repeat(auto-fit, minmax(510px, 1fr));
+	  gap: 20px;
+	  padding: 20px;
+	}
 
-<body>
+	.container {
+	  background: #1f1f1f;
+	  padding: 20px;
+	  border-radius: 10px;
+	  box-shadow: 0px 0px 15px rgba(0,0,0,0.6);
+	}
 
-<!-- ✅ HEADER -->
-<div class="header">
-  <img src="pada_logo.png">
-  <div class="header-text">
-    <h2>Blockchain & Distributed Ledger Technologies</h2>
-    <p>CsCyb105</p>
-  </div>
-</div>
+	.wallet-container {
+	  margin: 20px auto;
+	  width: 90%;
+	  max-width: 500px;
+	}
 
-<!-- ✅ APP TITLE -->
-<div class="title">
-  Trusted Software Release Verification System
-</div>
+    .header {
+      background: #1f1f1f;
+      padding: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+      border-bottom: 2px solid #00d4ff;
+    }
 
-<!-- WALLET (μένει μόνο του) -->
-<div class="container wallet-container">
-  <h3>Wallet Connection</h3>
+    .header img {
+      width: 60px;
+    }
 
-  <button onclick="connectWallet()">Connect MetaMask</button>
+    .header-text h2 {
+      margin: 0;
+      color: #00d4ff;
+      font-size: 18px;
+    }
 
-  <p>OR</p>
-
-  <input id="walletInput" placeholder="Enter Wallet Address">
-  <br>
-  <span id="useAddressBtn">  
-    <button id="walletBtn" onclick="setManualWallet()">Use Address</button>
-  </span>
-  <span id="useAddressConnectBtn">  
-    <button id="walletAddressBtn" onclick="connectWithAddress()">Use Address & Connect MetaMask</button>
-  </span>
-  <span id="adminButtons">
-    <button id="publisherBtn" onclick="addPublisherUI()">Add Publisher</button>
-    <button id="removePublisherBtn" onclick="removePublisherUI()">Remove Publisher</button>
-  </span>
-
-  <p id="account"></p>
-  <p id="roleLabel"></p>
-
-</div>
-
-<!-- ✅ WRAPPER για responsive layout -->
-<div class="container-wrapper">
-
-  <!-- REGISTER -->
-  <div class="container">
-    <h3>Register Release</h3>
-    <input id="version" placeholder="Version (e.g. v1.0)">
-    <input id="hash" placeholder="Hash (0x + 64 hex chars)">
-    <button id="registerBtn" onclick="register()">Register</button>
-  </div>
-
-  <!-- VERIFY -->
-  <div class="container">
-    <h3>Verify Release</h3>
-    <input id="v_version" placeholder="Version (e.g. v1.0)">
-    <input id="v_hash" placeholder="Hash (0x + 64 hex chars)">
-    <button id="verifyBtn" onclick="verify()">Verify</button>
-    <p id="verifyResult" class="result"></p>
-  </div>
-
-  <!-- GET -->
-  <div class="container">
-    <h3>Get Release Info</h3>
-    <input id="g_version" placeholder="Version (e.g. v1.0)">
-    <button id="getBtn" onclick="getRelease()">Get Info</button>
-    <p id="releaseInfo" class="result"></p>
-  </div>
-
-</div>
-
-<div class="footer">
-  © 2026 All rights reserved - Adrianos Theocharis (Cscyb25051)
-</div>
+    .header-text p {
+      margin: 0;
+      font-size: 13px;
+      color: #ccc;
+    }
 
 
-<div id="loadingOverlay" style="display:none;">
-  <img src="Blockchain.gif" alt="Loading..." />
-</div>
+	.footer {
+	  margin-top: 20px;
+	  padding: 15px;
+	  background: #1f1f1f;
+	  color: #888;
+	  font-size: 12px;
+	  text-align: center;
+	  border-top: 1px solid #333;
+	}
+
+    .title {
+      margin-top: 15px;
+      font-size: 20px;
+      color: #00ffcc;
+    }
+
+    .container {
+      margin: 15px auto;
+      width: 500px;
+      background: #1f1f1f;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0px 0px 15px rgba(0,0,0,0.6);
+    }
+
+    input {
+      width: 95%;
+      padding: 8px;
+      margin: 5px 0;
+      border-radius: 5px;
+      border: none;
+    }
+
+    button {
+      margin-top: 10px;
+      padding: 10px;
+      width: 80%;
+      border-radius: 5px;
+      border: none;
+      background: #00d4ff;
+      color: black;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #00aacc;
+    }
+
+    .result {
+      margin-top: 10px;
+      font-size: 12px;
+      color: #00ff99;
+      white-space: pre-line;
+    }
 
 
-<script defer src="main.js"></script>
-<script defer src="validate.js"></script>
-</body>
-</html>
+	button:disabled {
+	  background-color: #555;
+	  cursor: not-allowed;
+	  opacity: 0.6;
+	}
+
+
+  #loadingOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+#loadingOverlay img {
+  width: 550px;
+}
