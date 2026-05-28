@@ -75,20 +75,13 @@ function updateAccessUI() {
  */
   // 🔹 Admin (add/remove publishers)
   const addSection = document.getElementById("adminButtons");
-  const removeSection = document.getElementById("useAddressBtn");
 
   if (isOwner) {
     addSection.style.display = "block";
-    removeSection.style.display = "none";
-    document.getElementById("useAddressConnectBtn").style.display = "none";
   } else if(isPublisher){
     addSection.style.display = "none";
-    removeSection.style.display = "none";
-    document.getElementById("useAddressConnectBtn").style.display = "block";
   }else{
     addSection.style.display = "none";
-    removeSection.style.display = "block";
-    document.getElementById("useAddressConnectBtn").style.display = "none";
   }
 
   const roleLabel = document.getElementById("roleLabel");
