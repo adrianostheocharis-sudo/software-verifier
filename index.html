@@ -34,17 +34,20 @@
   <p>OR</p>
 
   <input id="walletInput" placeholder="Enter Wallet Address">
-  <button id="walletBtn" onclick="setManualWallet()">Use Address</button>
+  <br>
+  <span id="useAddressBtn">  
+    <button id="walletBtn" onclick="setManualWallet()">Use Address</button>
+  </span>
+  <span id="useAddressConnectBtn">  
+    <button id="walletAddressBtn" onclick="connectWithAddress()">Use Address & Connect MetaMask</button>
+  </span>
+  <span id="adminButtons">
+    <button id="publisherBtn" onclick="addPublisherUI()">Add Publisher</button>
+    <button id="removePublisherBtn" onclick="removePublisherUI()">Remove Publisher</button>
+  </span>
 
   <p id="account"></p>
-  
-  <label>Role</label>
-  <select id="roleSelect">
-    <option value="">Select Role</option>
-    <option value="publisher">Publisher</option>
-    <option value="user">User / Client</option>
-    <option value="auditor">Auditor</option>
-  </select>
+  <p id="roleLabel"></p>
 
 </div>
 
@@ -81,6 +84,12 @@
 <div class="footer">
   © 2026 All rights reserved - Adrianos Theocharis (Cscyb25051)
 </div>
+
+
+<div id="loadingOverlay" style="display:none;">
+  <img src="Blockchain.gif" alt="Loading..." />
+</div>
+
 
 <script defer src="main.js"></script>
 <script defer src="validate.js"></script>
