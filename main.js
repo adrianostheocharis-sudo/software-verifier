@@ -1,142 +1,328 @@
-    body {
-      font-family: Arial, sans-serif;
-      background: #121212;
-      color: #ffffff;
-      text-align: center;
-      margin: 0;
-    }
+let provider;
+let signer;
+let contract;
+let currentAccount;
+let owner = null;
+let ownerAddress;
+let isOwner;
+let isPublisher;
 
-	.container-wrapper {
-	  display: grid;
-	  grid-template-columns: repeat(auto-fit, minmax(510px, 1fr));
-	  gap: 20px;
-	  padding: 20px;
-	}
-
-	.container {
-	  background: #1f1f1f;
-	  padding: 20px;
-	  border-radius: 10px;
-	  box-shadow: 0px 0px 15px rgba(0,0,0,0.6);
-	}
-
-	.wallet-container {
-	  margin: 20px auto;
-	  width: 90%;
-	  max-width: 500px;
-	}
-
-    .header {
-      background: #1f1f1f;
-      padding: 15px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 15px;
-      border-bottom: 2px solid #00d4ff;
-    }
-
-    .header img {
-      width: 60px;
-    }
-
-    .header-text h2 {
-      margin: 0;
-      color: #00d4ff;
-      font-size: 18px;
-    }
-
-    .header-text p {
-      margin: 0;
-      font-size: 13px;
-      color: #ccc;
-    }
+//const contractAddress = "0xcb9A0962b383C2b609933D07ee4Bb39414FB88D7";
+const contractAddress = "0xA1A969Eb2695c19B4d47e198917C2e7a136F582D";
 
 
-	.footer {
-	  margin-top: 20px;
-	  padding: 15px;
-	  background: #1f1f1f;
-	  color: #888;
-	  font-size: 12px;
-	  text-align: center;
-	  border-top: 1px solid #333;
-	}
-
-    .title {
-      margin-top: 15px;
-      font-size: 20px;
-      color: #00ffcc;
-    }
-
-    .container {
-      margin: 15px auto;
-      width: 500px;
-      background: #1f1f1f;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0px 0px 15px rgba(0,0,0,0.6);
-    }
-
-    input {
-      width: 95%;
-      padding: 8px;
-      margin: 5px 0;
-      border-radius: 5px;
-      border: none;
-    }
-
-    button {
-      margin-top: 10px;
-      padding: 10px;
-      width: 80%;
-      border-radius: 5px;
-      border: none;
-      background: #00d4ff;
-      color: black;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background: #00aacc;
-    }
-
-    .result {
-      margin-top: 10px;
-      font-size: 12px;
-      color: #00ff99;
-      white-space: pre-line;
-    }
+const abi = [
+  "function registerRelease(string memory _version, bytes32 _hash)",
+  "function getRelease(string memory _version) view returns (string memory, bytes32, uint256, address)",
+  "function verifyRelease(string memory _version, bytes32 _hash) view returns (bool)",
+  "function owner() view returns (address)",
+  "function isPublisher(address _addr) view returns (bool)",
+  "function addPublisher(address _addr)",
+  "function removePublisher(address _addr)"
+];
 
 
-	button:disabled {
-	  background-color: #555;
-	  cursor: not-allowed;
-	  opacity: 0.6;
-	}
+// ✅ MetaMask Connect
+async function connectWallet() {
+  try {
+    showLoader();
 
+    // ✅ σύνδεση MetaMask
+    provider = new ethers.providers.Web3Provider(window.ethereum);
+    await provider.send("eth_requestAccounts", []);
 
-  #loadingOverlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.6);
-  display: none;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
+    signer = provider.getSigner();
+    currentAccount = await signer.getAddress();
+
+    // ✅ contract με signer (write + read)
+    contract = new ethers.Contract(contractAddress, abi, signer);
+
+    // ✅ πάρε δεδομένα από contract
+    ownerAddress = await contract.owner();
+    isPublisher = await contract.isPublisher(currentAccount);
+
+    // ✅ υπολόγισε roles
+    isOwner = currentAccount.toLowerCase() === ownerAddress.toLowerCase();
+
+    // ✅ εμφάνιση account
+    document.getElementById("account").innerHTML =
+      "<h3>Wallet Address Connected</h3><span id='addressStyle'>" + currentAccount + "</span>";
+
+    // ✅ ενημέρωση UI
+    updateAccessUI();
+
+    hideLoader();
+
+  } catch (err) {
+    console.error(err);
+    alert("❌ Failed to connect wallet!");
+    hideLoader();
+  }
 }
 
-#loadingOverlay img {
-  width: 550px;
+
+function updateAccessUI() {
+
+  const addSection = document.getElementById("adminButtons");
+  document.getElementById("connectWalletBtn").disabled = true;
+  document.getElementById("verifyForm").style.display = "block";
+  document.getElementById("getForm").style.display = "block";
+
+  if (isOwner) {
+    addSection.style.display = "block";
+    document.getElementById("registerForm").style.display = "block";
+  } else if(isPublisher){
+    addSection.style.display = "none";
+    document.getElementById("registerForm").style.display = "block";
+  }else{
+    addSection.style.display = "none";
+  }
+
+  const roleLabel = document.getElementById("roleLabel");
+
+  if (isOwner) {
+    roleLabel.innerText = "🟢 OWNER (Admin/Read/Write Mode)";
+  } else if (isPublisher) {
+    roleLabel.innerText = "🔵 PUBLISHER (Read/Write Mode)";
+  } else {
+    roleLabel.innerText = "⚪ CLIENT/AUDITOR (Read-only Mode)";
+  }
+
 }
 
-#addressStyle {
-  background:#00d4ff;
-  font-weight: 600; 
-  padding: 6px;
-  border-radius: 0.5rem;
+
+async function addPublisherUI() {
+  const addr = document.getElementById("walletInput").value;
+  const el = document.getElementById("publisherResult");
+  showLoader();
+  if (!contract) {
+    alert("❌ Connect MetaMask first!");
+    return;
+  }
+
+  
+  // ✅ CONFIRMATION
+  const confirmAction = confirm(
+    "Are you sure you want to ADD this publisher?\n\n" + addr
+  );
+
+  if (!confirmAction) return;
+
+
+  // ✅ Validate address
+  if (!isValidAddress(addr)) {
+    el.style.color = "red";
+    el.innerText = "❌ Invalid address!";
+    return;
+  }
+  
+  try {
+
+    // ✅ Owner check (UI safety)
+    const owner = await contract.owner();
+
+    if (currentAccount.toLowerCase() !== owner.toLowerCase()) {
+      el.style.color = "red";
+      el.innerText = "❌ Only owner can add publishers!";
+      hideLoader();
+      return;
+    }
+
+    // ✅ Check if already publisher (UX)
+    const exists = await contract.isPublisher(addr);
+
+    if (exists) {
+      el.style.color = "orange";
+      el.innerText = "⚠️ Already a publisher!";
+      hideLoader();
+      return;
+    }
+    // ✅ Send transaction
+    const tx = await contract.addPublisher(addr);
+    await tx.wait();
+    hideLoader();
+    el.style.color = "#00ff99";
+    el.innerText = "✅ Publisher added successfully!";
+
+  } catch (err) {
+    hideLoader();
+    console.error(err);
+
+    el.style.color = "red";
+
+    if (err.reason) {
+
+      el.innerText = "❌ " + err.reason;
+    } else {
+      el.innerText = "❌ Transaction failed!";
+    }
+  }
+  checkPublisherStatus(addr);
 }
+
+
+async function removePublisherUI() {
+  const addr = document.getElementById("walletInput").value;
+  const el = document.getElementById("publisherResult");
+  
+  if (!contract) {
+    alert("❌ Connect MetaMask first!");
+    return;
+  }
+
+  // ✅ CONFIRMATION
+  const confirmAction = confirm(
+    "⚠️ WARNING!\n\nAre you sure you want to REMOVE this publisher?\n\n" + addr
+  );
+
+  if (!confirmAction) return;
+
+  // ✅ Validate address
+  if (!isValidAddress(addr)) {
+    el.style.color = "red";
+    el.innerText = "❌ Invalid address!";
+    return;
+  }
+
+  try {
+    // ✅ Owner check
+    showLoader();
+    const owner = await contract.owner();
+
+    if (currentAccount.toLowerCase() !== owner.toLowerCase()) {
+      el.style.color = "red";
+      el.innerText = "❌ Only owner can remove publishers!";
+      return;
+    }
+
+    // ✅ Check if exists
+    const exists = await contract.isPublisher(addr);
+
+    if (!exists) {
+      el.style.color = "orange";
+      el.innerText = "⚠️ Address is not a publisher!";
+      return;
+    }
+
+    // ✅ Send transaction
+    const tx = await contract.removePublisher(addr);
+    await tx.wait();
+    hideLoader();
+    el.style.color = "#00ff99";
+    el.innerText = "✅ Publisher removed successfully!";
+
+  } catch (err) {
+    console.error(err);
+    hideLoader();
+    el.style.color = "red";
+
+    if (err.reason) {
+      el.innerText = "❌ " + err.reason;
+    } else {
+      el.innerText = "❌ Transaction failed!";
+    }
+  }
+  checkPublisherStatus(addr);
+}
+
+
+// ✅ Register
+async function register() {
+
+  if (isPublisher) {
+    alert("❌ Only publisher can register release!");
+    return;
+  }
+
+  if (!contract) {
+    alert("Connect wallet first!");
+    return;
+  }
+
+  showLoader();
+
+  const version = document.getElementById("version").value;
+  const hash = document.getElementById("hash").value;
+
+  const tx = await contract.registerRelease(version, hash);
+
+  await tx.wait();
+
+  hideLoader();
+
+  alert("✅ Release Registered!");
+}
+
+// ✅ Verify
+async function verify() {
+  
+  if (!contract) {
+    alert("Connect wallet first!");
+    return;
+  }
+  const version = document.getElementById("v_version").value;
+  const hash = document.getElementById("v_hash").value;
+  const el = document.getElementById("verifyResult");
+
+  try {
+    const result = await contract.verifyRelease(version, hash);
+
+    if (result) {
+      el.style.color = "#00ff99"; // ✅ πράσινο
+      el.innerText = "✅ VALID RELEASE";
+    } else {
+      el.style.color = "orange"; // ⚠️ πορτοκαλί (υπάρχει αλλά δεν ταιριάζει)
+      el.innerText = "❌ INVALID RELEASE";
+    }
+
+  } catch (err) {
+    console.error(err);
+
+    // ✅ αν δεν υπάρχει release
+    if (err.reason && err.reason.includes("not found")) {
+      el.style.color = "red";
+      el.innerText = "❌ Release not found!";
+    } else {
+      el.style.color = "red";
+      el.innerText = "❌ Verification error!";
+    }
+  }
+}
+
+
+// ✅ Get Release
+async function getRelease() {
+  
+  if (!contract) {
+    alert("Connect wallet first!");
+    return;
+  }
+  const version = document.getElementById("g_version").value;
+  const el = document.getElementById("releaseInfo");
+
+  try {
+    const data = await contract.getRelease(version);
+
+    el.style.color = "#00ff99";
+    el.innerText =
+      "Version: " + data[0] + "\n" +
+      "Hash: " + data[1] + "\n" +
+      "Timestamp: " + new Date(data[2] * 1000) + "\n" +
+      "Publisher: " + data[3];
+
+  } catch (err) {
+    console.error(err);
+
+    // ✅ Αν το error είναι "Release not found"
+    if (err.reason && err.reason.includes("not found")) {
+      el.style.color = "red";
+      el.innerText = "❌ Release not found!";
+    } else {
+      el.style.color = "red";
+      el.innerText = "❌ Error fetching release!";
+    }
+  }
+}
+
+
+
