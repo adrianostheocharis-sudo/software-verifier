@@ -58,23 +58,33 @@ function validateWallet() {
 
 async function checkPublisherStatus(address) {
 
-  if (!writeContract || !isOwner){
+  if (!contract || !isOwner){
     currentAccount = document.getElementById("walletInput").value;
 
     // ✅ Δημιουργία provider (χωρίς signer)
     provider = new ethers.providers.Web3Provider(window.ethereum);
 
     // ✅ Δημιουργία contract READ-ONLY
-    readContract = new ethers.Contract(contractAddress, abi, provider);
-    isPublisher = await readContract.isPublisher(currentAccount);
+    contract = new ethers.Contract(contractAddress, abi, provider);
+    isPublisher = await contract.isPublisher(currentAccount);
 
     updateAccessUI();
       
   }else{
 
+    isOwnerAddress = ownerAddress.toLowerCase() === address.toLowerCase();
+      if (isOwnerAddress) {
+        const el = document.getElementById("publisherResult");
+        el.style.color = "red";
+        el.innerText = "❌ Cannot Delete Owner's Address!";
+        return;
+    }
+    
     try {
 
-      isPublisher = await writeContract.isPublisher(address);
+
+      isPublisher = await contract.isPublisher(address);
+      
       if (isPublisher) {
         document.getElementById("publisherBtn").disabled = true;
         document.getElementById("removePublisherBtn").disabled = false;
