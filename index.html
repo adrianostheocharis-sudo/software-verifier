@@ -30,20 +30,14 @@
   <h3>Wallet Connection</h3>
 
   <button onclick="connectWallet()">Connect MetaMask</button>
+  <span id="adminButtons"></span>
+    <p>OR</p>
 
-  <p>OR</p>
-
-  <input id="walletInput" placeholder="Enter Wallet Address">
-  <br>
-  <span id="useAddressBtn">  
-    <button id="walletBtn" onclick="setManualWallet()">Use Address</button>
-  </span>
-  <span id="useAddressConnectBtn">  
-    <button id="walletAddressBtn" onclick="connectWithAddress()">Use Address & Connect MetaMask</button>
-  </span>
-  <span id="adminButtons">
-    <button id="publisherBtn" onclick="addPublisherUI()">Add Publisher</button>
-    <button id="removePublisherBtn" onclick="removePublisherUI()">Remove Publisher</button>
+    <input id="walletInput" placeholder="Enter Wallet Address">
+    <br>
+    
+      <button id="publisherBtn" onclick="addPublisherUI()">Add Publisher</button>
+      <button id="removePublisherBtn" onclick="removePublisherUI()">Remove Publisher</button>
   </span>
 
   <p id="account"></p>
