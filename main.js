@@ -229,7 +229,7 @@ async function removePublisherUI() {
 // ✅ Register
 async function register() {
 
-  if (isPublisher) {
+  if (!isPublisher && !isOwner)) {
     alert("❌ Only publisher can register release!");
     return;
   }
