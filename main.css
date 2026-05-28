@@ -133,3 +133,11 @@
 #loadingOverlay img {
   width: 550px;
 }
+
+#addressStyle {
+  background:#00d4ff;
+  color: black;
+  font-weight: 600; 
+  padding: 6px;
+  border-radius: 0.5rem;
+}
