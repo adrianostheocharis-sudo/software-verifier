@@ -1,5 +1,4 @@
 document.getElementById("walletInput").addEventListener("input", validateWallet);
-document.getElementById("roleSelect") .addEventListener("change", setRole);
 
 document.getElementById("version").addEventListener("input", validateRegister);
 document.getElementById("hash").addEventListener("input", validateRegister);
@@ -9,19 +8,22 @@ document.getElementById("v_hash").addEventListener("input", validateVerify);
 
 document.getElementById("g_version").addEventListener("input", validateGet);
 
-document.getElementById("account").innerText =  "Role: " + currentRole + " | " + currentAccount;
+
 
 let currentRole = null;
 
 function setRole() {
-  currentRole = document.getElementById("roleSelect").value;
 
-  if (currentRole === "publisher") {
+  if (isOwner || isPublisher) {
     enableRegister();
+      document.getElementById("account").innerText = "Using address: " + currentAccount;
   } else {
     disableRegister();
+      document.getElementById("account").innerText = "Using address (read-only): " + currentAccount;
   }
+
 }
+
 
 function disableRegister() {
   const container = document.querySelectorAll(".container")[1]; // register box
@@ -35,15 +37,84 @@ function enableRegister() {
 
 
 function validateWallet() {
-  const address = document.getElementById("walletInput").value;
+  const input = document.getElementById("walletInput");
+  let address = input.value;
+
   const btn = document.getElementById("walletBtn");
 
   if (isValidAddress(address)) {
+
+    address = ethers.utils.getAddress(address);
+    btn.disabled = false;
+    input.style.border = "2px solid #00ff99";
+    
+    checkPublisherStatus(address);
+  } else {
+    btn.disabled = true;
+    input.style.border = "2px solid red";
+
+    resetPublisherButtons();
+    return;
+  }
+
+
+}
+
+async function checkPublisherStatus(address) {
+
+  if (!writeContract || !isOwner){
+    currentAccount = document.getElementById("walletInput").value;
+
+    // ✅ Δημιουργία provider (χωρίς signer)
+    provider = new ethers.providers.Web3Provider(window.ethereum);
+
+    // ✅ Δημιουργία contract READ-ONLY
+    readContract = new ethers.Contract(contractAddress, abi, provider);
+    isPublisher = await readContract.isPublisher(currentAccount);
+
+    updateAccessUI();
+      
+  }else{
+
+    try {
+
+      isPublisher = await writeContract.isPublisher(address);
+      if (isPublisher) {
+        document.getElementById("publisherBtn").disabled = true;
+        document.getElementById("removePublisherBtn").disabled = false;
+      } else {
+        document.getElementById("publisherBtn").disabled = false;
+        document.getElementById("removePublisherBtn").disabled = true;
+      }
+
+    } catch (err) {
+      console.error(err);
+    }
+
+  }
+  
+
+}
+
+
+function resetPublisherButtons() {
+  document.getElementById("publisherBtn").disabled = true;
+  document.getElementById("removePublisherBtn").disabled = true;
+}
+
+
+function validateRemovePublisher() {
+
+  const btn = document.getElementById("removePublisherBtn");
+
+  if (isValidAddress(addr)) {
     btn.disabled = false;
   } else {
     btn.disabled = true;
   }
+
 }
+
 
 function validateRegister() {
   const version = document.getElementById("version").value;
@@ -81,21 +152,6 @@ function validateGet() {
   }
 }
 
-
-function validateWallet() {
-  const address = document.getElementById("walletInput").value;
-  const btn = document.getElementById("walletBtn");
-  const input = document.getElementById("walletInput");
-
-  if (isValidAddress(address)) {
-    btn.disabled = false;
-    input.style.border = "2px solid #00ff99"; // πράσινο
-  } else {
-    btn.disabled = true;
-    input.style.border = "2px solid red"; // κόκκινο
-  }
-}
-
 function isValidHash(hash) {
   return /^0x[a-fA-F0-9]{64}$/.test(hash);
 }
@@ -108,9 +164,22 @@ function isValidAddress(address) {
   return /^0x[a-fA-F0-9]{40}$/.test(address);
 }
 
+function showLoader() {
+  document.getElementById("loadingOverlay").style.display = "flex";
+}
+
+function hideLoader() {
+  document.getElementById("loadingOverlay").style.display = "none";
+}
+
+
 window.onload = () => {
   document.getElementById("walletBtn").disabled = true;
+  document.getElementById("publisherBtn").disabled = true;
+  document.getElementById("removePublisherBtn").disabled = true;
   document.getElementById("registerBtn").disabled = true;
   document.getElementById("verifyBtn").disabled = true;
   document.getElementById("getBtn").disabled = true;
+  document.getElementById("adminButtons").style.display = "none";
+  document.getElementById("useAddressConnectBtn").style.display = "none";
 };
