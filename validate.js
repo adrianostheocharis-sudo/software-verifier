@@ -164,6 +164,8 @@ function isValidAddress(address) {
   return /^0x[a-fA-F0-9]{40}$/.test(address);
 }
 
+
+
 function showLoader() {
   document.getElementById("loadingOverlay").style.display = "flex";
 }
@@ -181,5 +183,4 @@ window.onload = () => {
   document.getElementById("verifyBtn").disabled = true;
   document.getElementById("getBtn").disabled = true;
   document.getElementById("adminButtons").style.display = "none";
-  document.getElementById("useAddressConnectBtn").style.display = "none";
 };
