@@ -64,22 +64,17 @@ async function connectWallet() {
 
 function updateAccessUI() {
 
-  // 🔹 Register section
-/*   const registerBtn = document.getElementById("registerBtn");
-
-  if (isPublisher) {
-    registerBtn.disabled = false;
-  } else {
-    registerBtn.disabled = true;
-  }
- */
-  // 🔹 Admin (add/remove publishers)
   const addSection = document.getElementById("adminButtons");
+
+  document.getElementById("verifyForm").style.display = "block";
+  document.getElementById("getForm").style.display = "block";
 
   if (isOwner) {
     addSection.style.display = "block";
+    document.getElementById("registerForm").style.display = "block";
   } else if(isPublisher){
     addSection.style.display = "none";
+    document.getElementById("registerForm").style.display = "block";
   }else{
     addSection.style.display = "none";
   }
