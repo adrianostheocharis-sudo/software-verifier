@@ -39,7 +39,7 @@ function enableRegister() {
 function validateWallet() {
   const input = document.getElementById("walletInput");
   let address = input.value;
-
+  document.getElementById("publisherResult").innerText = "";
   if (isValidAddress(address)) {
 
     address = ethers.utils.getAddress(address);
@@ -57,7 +57,8 @@ function validateWallet() {
 }
 
 async function checkPublisherStatus(address) {
-
+  
+  
   if (!contract || !isOwner){
     currentAccount = document.getElementById("walletInput").value;
 
@@ -79,7 +80,7 @@ async function checkPublisherStatus(address) {
         el.innerText = "❌ Cannot Delete Owner's Address!";
         return;
     }
-    
+
     try {
 
 
