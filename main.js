@@ -26,85 +26,37 @@ const abi = [
 // ✅ MetaMask Connect
 async function connectWallet() {
   try {
-    // ✅ MetaMask connection
     showLoader();
+
+    // ✅ σύνδεση MetaMask
     provider = new ethers.providers.Web3Provider(window.ethereum);
     await provider.send("eth_requestAccounts", []);
-    signer = provider.getSigner();
 
+    signer = provider.getSigner();
     currentAccount = await signer.getAddress();
 
-    // ✅ write contract (με signer)
-    writeContract = new ethers.Contract(contractAddress, abi, signer);
+    // ✅ contract με signer (write + read)
+    contract = new ethers.Contract(contractAddress, abi, signer);
 
-    // ✅ read contract (optional)
-    readContract = writeContract;
+    // ✅ πάρε δεδομένα από contract
+    ownerAddress = await contract.owner();
+    const isPub = await contract.isPublisher(currentAccount);
+
+    // ✅ υπολόγισε roles
+    const isOwn = currentAccount.toLowerCase() === ownerAddress.toLowerCase();
 
     // ✅ εμφάνιση account
     document.getElementById("account").innerText =
       "Connected: " + currentAccount;
 
-    // ✅ πάρε owner
-    ownerAddress = await writeContract.owner();
+    // ✅ ενημέρωση UI
+    updateAccessUI(isOwn, isPub);
 
-    // ✅ check roles
-    isOwner = currentAccount.toLowerCase() === ownerAddress.toLowerCase();
-    isPublisher = await writeContract.isPublisher(currentAccount);
     hideLoader();
-    updateAccessUI();
 
   } catch (err) {
     console.error(err);
     alert("❌ Failed to connect wallet!");
-  }
-}
-
-
-async function connectWithAddress() {
-  try {
-    showLoader();
-
-    const inputAddress = document.getElementById("walletInput").value;
-
-    if (!isValidAddress(inputAddress)) {
-      alert("❌ Invalid address");
-      return;
-    }
-
-    // ✅ connect MetaMask
-    provider = new ethers.providers.Web3Provider(window.ethereum);
-    await provider.send("eth_requestAccounts", []);
-
-    signer = provider.getSigner();
-    const metamaskAddress = await signer.getAddress();
-
-    // ✅ compare addresses
-    if (metamaskAddress.toLowerCase() !== inputAddress.toLowerCase()) {
-      alert("❌ The connected wallet does not match the entered address!");
-      hideLoader();
-      return;
-    }
-
-    // ✅ αν ταιριάζουν → προχωράς
-    currentAccount = metamaskAddress;
-
-    writeContract = new ethers.Contract(contractAddress, abi, signer);
-    readContract = writeContract;
-
-    document.getElementById("account").innerText =
-      "Connected: " + currentAccount;
-
-    ownerAddress = await writeContract.owner();
-
-    isOwner = currentAccount.toLowerCase() === ownerAddress.toLowerCase();
-    isPublisher = await writeContract.isPublisher(currentAccount);
-
-    hideLoader();
-    updateAccessUI();
-
-  } catch (err) {
-    console.error(err);
-    alert("❌ Connection failed!");
     hideLoader();
   }
 }
