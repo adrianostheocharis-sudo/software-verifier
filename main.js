@@ -91,31 +91,6 @@ function updateAccessUI() {
 
 }
 
-// ✅ Manual wallet input (read-only mode)
-async function setManualWallet() {
-  signer = null;
-  writeContract = null;
-  currentAccount = document.getElementById("walletInput").value;
-
-  // ✅ Δημιουργία provider (χωρίς signer)
-  provider = new ethers.providers.Web3Provider(window.ethereum);
-
-  // ✅ Δημιουργία contract READ-ONLY
-  readContract = new ethers.Contract(contractAddress, abi, provider);
-  let exists = await readContract.isPublisher(currentAccount);
-  let usingStatus;
-
-  if (exists) {
-    usingStatus = "";
-    enableRegister();
-  }else{
-    disableRegister();
-    usingStatus = "(read-only)";
-  }
-  document.getElementById("account").innerText = "Using address "+usingStatus+": " + currentAccount;
-
-}
-
 
 async function addPublisherUI() {
   const addr = document.getElementById("walletInput").value;
@@ -133,7 +108,7 @@ async function addPublisherUI() {
   try {
     showLoader();
 
-    const exists = await writeContract.isPublisher(addr);
+    const exists = await contract.isPublisher(addr);
 
     if (exists) {
       hideLoader();
@@ -141,7 +116,7 @@ async function addPublisherUI() {
       return;
     }
 
-    const tx = await writeContract.addPublisher(addr);
+    const tx = await contract.addPublisher(addr);
 
     //updateLoader("🟠 Transaction submitted...");
 
@@ -178,7 +153,7 @@ async function removePublisherUI() {
   try {
     showLoader();
 
-    const exists = await writeContract.isPublisher(addr);
+    const exists = await contract.isPublisher(addr);
 
     if (!exists) {
       hideLoader();
@@ -186,7 +161,7 @@ async function removePublisherUI() {
       return;
     }
 
-    const tx = await writeContract.removePublisher(addr);
+    const tx = await contract.removePublisher(addr);
 
     //updateLoader("🟠 Transaction submitted...");
 
@@ -215,7 +190,7 @@ async function register() {
     return;
   }
 
-  if (!writeContract) {
+  if (!contract) {
     alert("Connect wallet first!");
     return;
   }
@@ -225,7 +200,7 @@ async function register() {
   const version = document.getElementById("version").value;
   const hash = document.getElementById("hash").value;
 
-  const tx = await writeContract.registerRelease(version, hash);
+  const tx = await contract.registerRelease(version, hash);
 
   await tx.wait();
 
@@ -237,7 +212,7 @@ async function register() {
 // ✅ Verify
 async function verify() {
   
-  if (!readContract) {
+  if (!contract) {
     alert("Connect wallet first!");
     return;
   }
@@ -246,7 +221,7 @@ async function verify() {
   const el = document.getElementById("verifyResult");
 
   try {
-    const result = await readContract.verifyRelease(version, hash);
+    const result = await contract.verifyRelease(version, hash);
 
     if (result) {
       el.style.color = "#00ff99"; // ✅ πράσινο
@@ -274,7 +249,7 @@ async function verify() {
 // ✅ Get Release
 async function getRelease() {
   
-  if (!readContract) {
+  if (!contract) {
     alert("Connect wallet first!");
     return;
   }
@@ -282,7 +257,7 @@ async function getRelease() {
   const el = document.getElementById("releaseInfo");
 
   try {
-    const data = await readContract.getRelease(version);
+    const data = await contract.getRelease(version);
 
     el.style.color = "#00ff99";
     el.innerText =
