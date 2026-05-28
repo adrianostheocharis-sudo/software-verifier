@@ -40,17 +40,17 @@ async function connectWallet() {
 
     // ✅ πάρε δεδομένα από contract
     ownerAddress = await contract.owner();
-    const isPub = await contract.isPublisher(currentAccount);
+    isPublisher = await contract.isPublisher(currentAccount);
 
     // ✅ υπολόγισε roles
-    const isOwn = currentAccount.toLowerCase() === ownerAddress.toLowerCase();
+    isOwner = currentAccount.toLowerCase() === ownerAddress.toLowerCase();
 
     // ✅ εμφάνιση account
     document.getElementById("account").innerText =
       "Connected: " + currentAccount;
 
     // ✅ ενημέρωση UI
-    updateAccessUI(isOwn, isPub);
+    updateAccessUI();
 
     hideLoader();
 
