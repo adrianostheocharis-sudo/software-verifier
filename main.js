@@ -94,7 +94,7 @@ function updateAccessUI() {
 async function addPublisherUI() {
   const addr = document.getElementById("walletInput").value;
   const el = document.getElementById("publisherResult");
-  showLoader();
+ 
   if (!contract) {
     alert("❌ Connect MetaMask first!");
     return;
@@ -117,7 +117,8 @@ async function addPublisherUI() {
   }
   
   try {
-
+    
+    showLoader();
     // ✅ Owner check (UI safety)
     const owner = await contract.owner();
 
